@@ -1,8 +1,16 @@
 from flask import Flask, render_template
 import telnetlib
 import os
+import threading
 
 app = Flask(__name__)
+
+
+def send_commands(file):
+    device_config = file.split('/')[-1]
+    print "File %s sent to the device" % device_config
+    return
+
 
 def get_files(path):
     path = 'tftproot/'+ path
@@ -12,6 +20,7 @@ def get_files(path):
             files.append(os.path.join(path,f))
     return files
 
+
 def create_lab_list():
     list = []
     for x in os.walk('tftproot'):
@@ -20,14 +29,19 @@ def create_lab_list():
             list.append(path[1] + ' --> ' + path[2])
     return list
 
+
 @app.route('/load/<lab>/')
 def load_lab(lab):
     list = create_lab_list()
     lab_split = lab.split(' --> ')
     loading = "Commands sent to load INE LAB '%s' from '%s'" % (lab_split[1], lab_split[0])
+    threads = []
     for file in get_files(lab_split[0] + '/' +lab_split[1]):
-        print file
+        t = threading.Thread(target=send_commands, args=(file,))
+        threads.append(t)
+        t.start()
     return render_template('main.html', list=list, loading=loading)
+
 
 #Main function to show the details of iridium Calls
 @app.route('/')
