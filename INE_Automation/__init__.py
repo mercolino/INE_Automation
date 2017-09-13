@@ -73,11 +73,11 @@ def send_commands(file):
     # Reset configuration
     telnet.write('config replace bootflash://configs/blank.cfg\n')
     time.sleep(1)
-    telnet.write('\n')
+    telnet.write('y\n')
     time.sleep(3)
     telnet.write('copy tftp://10.254.254.100/' + file + ' running-config\n')
     time.sleep(1)
-    telnet.write('y\n')
+    telnet.write('running-config\n')
     time.sleep(10)
     telnet.write('\n')
     telnet.write('\n')
