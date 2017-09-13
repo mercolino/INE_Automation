@@ -8,6 +8,7 @@ app = Flask(__name__)
 USERNAME = 'cisco'
 PASSWORD = 'cisco'
 TIMEOUT = 20
+INSTALLATION_PATH = '/home/usap/PycharmProjects/INE_Automation/INE_Automation/'
 
 
 def send_commands(file):
@@ -70,13 +71,14 @@ def send_commands(file):
     telnet.write(PASSWORD + '\n')
     time.sleep(1)
     # Reset configuration
-    telnet.write('config replace bootflash:/configs/blank.cfg\n')
+    telnet.write('config replace bootflash://configs/blank.cfg\n')
     time.sleep(1)
     telnet.write('\n')
+    time.sleep(3)
+    telnet.write('copy tftp://10.254.254.100/' + file + ' running-config\n')
     time.sleep(1)
-    telnet.write('copy tftp://10.254.254.100/' + file + '\n')
-    time.sleep(1)
-    telnet.write('\n')
+    telnet.write('y\n')
+    time.sleep(10)
     telnet.write('\n')
     telnet.write('\n')
     telnet.write('\n')
@@ -86,7 +88,7 @@ def send_commands(file):
 
 
 def get_files(path):
-    path = 'tftproot/' + path
+    path = INSTALLATION_PATH + 'tftproot/' + path
     files = []
     for f in os.listdir(path):
         if os.path.isfile(os.path.join(path, f)):
@@ -96,10 +98,10 @@ def get_files(path):
 
 def create_lab_list():
     list = []
-    for x in os.walk('tftproot'):
+    for x in os.walk(INSTALLATION_PATH + 'tftproot'):
         path = x[0].split('/')
-        if len(path) > 2:
-            list.append(path[1] + ' --> ' + path[2])
+        if len(path) > len(INSTALLATION_PATH.split('/')) + 1:
+            list.append(path[-2] + ' --> ' + path[-1])
     return list
 
 
@@ -110,7 +112,7 @@ def load_lab(lab):
     loading = "Commands sent to load INE LAB '%s' from '%s'" % (lab_split[1], lab_split[0])
     threads = []
     for file in get_files(lab_split[0] + '/' +lab_split[1]):
-        t = threading.Thread(target=send_commands, args=(file[10:],))
+        t = threading.Thread(target=send_commands, args=(file[len(INSTALLATION_PATH) + 9:],))
         threads.append(t)
         t.start()
     return render_template('main.html', list=list, loading=loading)
@@ -125,4 +127,4 @@ def main():
 
 #Start the Flask application, WARNING: BEFORE PRODUCTION DEPLOYMENT CHANGE DEBUG TO FALSE
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
