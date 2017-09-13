@@ -70,7 +70,7 @@ def send_commands(file):
     telnet.write(PASSWORD + '\n')
     time.sleep(1)
     # Reset configuration
-    telnet.write('config replace bootflash:/configs/blank.cfg' + '\n')
+    telnet.write('config replace bootflash:/configs/blank.cfg\n')
     time.sleep(1)
     telnet.write('\n')
     time.sleep(1)
@@ -80,6 +80,7 @@ def send_commands(file):
     telnet.write('\n')
     telnet.write('\n')
     telnet.write('\n')
+    telnet.write('end\n')
     telnet.close()
     return
 
